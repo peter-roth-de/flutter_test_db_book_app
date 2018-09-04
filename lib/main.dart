@@ -1,5 +1,3 @@
-import 'dart:async';
-
 /*******
  * https://github.com/Norbert515/BookSearch/blob/v1/lib/main.dart
  *
@@ -9,8 +7,13 @@ import 'dart:async';
  */
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 import 'dart:convert';
 import 'package:rxdart/rxdart.dart';
+import 'package:flutter_test_db_book_app/model/book.dart';
+import 'package:flutter_test_db_book_app/bookNotesPage.dart';
+import 'package:flutter_test_db_book_app/database.dart';
+import 'package:flutter_test_db_book_app/utils/utils.dart';
 
 
 void main() => runApp(new MyApp());
@@ -32,7 +35,9 @@ class MyApp extends StatelessWidget {
         // counter didn't reset back to zero; the application is not restarted.
         primarySwatch: Colors.green,
       ),
-      home: new MyHomePage(title: 'Book Search'),
+      routes: {
+       '/': (BuildContext context) => new MyHomePage(title: 'Book Search'),
+    }
     );
   }
 }
@@ -51,17 +56,6 @@ class _MyHomePageState extends State<MyHomePage> {
   final subject = new PublishSubject<String>();
   bool _isLoading = false;
 
-  void _exp_textChanged(String text) async {
-    print("!!!! _textChanged called !!!");
-    // https://jsonplaceholder.typicode.com/posts
-    // https//www.googleapis.com/books/v1/volumes?q=$text
-    // https://books.google.com?q=$text
-    // https://www.google.de/search?q=$text
-    final response = await http.get('https://books.google.com?q=$text');
-    // compute function to run parsePosts in a separate isolate
-    print(response.body);
-  }
-
   void _textChanged(String text) {
     if(text.isEmpty) {
       setState((){_isLoading = false; });
@@ -71,7 +65,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {_isLoading = true;});
     _clearList();
-
     //"https//www.googleapis.com/books/v1/volumes?q=$text"
     http.get("https://www.googleapis.com/books/v1/volumes?q=$text")
       .then((response) => response.body)
@@ -80,24 +73,6 @@ class _MyHomePageState extends State<MyHomePage> {
       .then((list) {list.forEach(_addBook);})
       .catchError(_onError)
       .then((e){setState(() {_isLoading = false;});});
-  }
-
-  void _callWeb(String text) {
-     //"https//www.googleapis.com/books/v1/volumes?q=$text"
-    // final response = http.get("https://books.google.com?q=$text")
-    http.get("https://www.googleapis.com/books/v1/volumes?q=$text")
-        .then((response) => print(response.body))
-        //.then((response) => response.body)
-        //.then(json.decode)
-        ;
-        /*
-      .then((response) => response.body)
-      .then(json.decode)
-      .then((map) => map["items"])
-      .then((list) {list.forEach(_addBook);})
-      .catchError(_onError)
-      .then((e){setState(() {_isLoading = false;});});
-      */
   }
 
   void _onError(dynamic d) {
@@ -114,16 +89,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _addBook(dynamic book) {
     setState(() {
-      _items.add(new Book(book["volumeInfo"]["title"], book["volumeInfo"]["imageLinks"]["smallThumbnail"]));
+      _items.add(new Book(
+          title: book["volumeInfo"]["title"],
+          url: book["volumeInfo"]["imageLinks"]["smallThumbnail"],
+          id: book["id"]
+      ));
     });
   }
 
   @override
+  void dispose() {
+    subject.close();
+    BookDatabase.get().close();
+    super.dispose();
+  }
+  @override
   void initState() {
     super.initState();
     subject.stream.debounce(new Duration(milliseconds: 600)).listen(_textChanged);
+    BookDatabase.get().init();
   }
-
 
   _dismissKeyboard(BuildContext context) {
     FocusScope.of(context).requestFocus(new FocusNode());
@@ -164,19 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: new EdgeInsets.all(8.0),
                     itemCount: _items.length,
                     itemBuilder: (BuildContext context, int index){
-                      return new Card(
-                        child: new Padding(
-                            padding: new EdgeInsets.all(8.0),
-                            child: new Row(
-                              children: <Widget>[
-                                _items[index].url != null? new Image.network(_items[index].url): new Container(),
-                                new Flexible(
-                                  child: new Text(_items[index].title, maxLines: 10),
-                                ),
-                              ],
-                            )
-                        )
-                      );
+                      return new BookCard(_items[index]);
                     },
                 )
             )
@@ -188,11 +161,87 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+class BookCard extends StatefulWidget {
+  BookCard(this.book);
+  final Book book;
 
-class Book {
-  String title, url;
-  Book(String title, String url) {
-    this.title = title;
-    this.url = url;
+  @override
+  State<StatefulWidget> createState() => new BookCardState();
+}
+
+class BookCardState extends State<BookCard> {
+  Book bookState;
+
+  @override
+  void initState() {
+    super.initState();
+    bookState = widget.book;
+    BookDatabase.get().getBook(widget.book.id)
+      .then((book) {
+        if(book == null) return;
+        setState(() {
+          bookState = book;
+        });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+            new FadeRoute(
+              builder: (BuildContext context) => new BookNotesPage(bookState),
+              settings: new RouteSettings(
+                  name: '/notes', isInitialRoute: false),
+            ));
+      },
+      child: new Card(
+          child: new Container(
+            height: 200.0,
+            child: new Padding(
+                padding: new EdgeInsets.all(8.0),
+                child: new Row(
+                  children: <Widget>[
+                    bookState.url != null ?
+                    new Hero(
+                      child: new Image.network(bookState.url),
+                      tag: bookState.id,
+                    ) :
+                    new Container(),
+                    new Expanded(
+                      child: new Stack(
+                        children: <Widget>[
+                          new Align(
+                              child: new Padding(
+                                child: new Text(bookState.title, maxLines: 10),
+                                padding: new EdgeInsets.all(8.0),
+                              ),
+                              alignment: Alignment.center,
+                          ),
+                          new Align(
+                            child: new IconButton(
+                              icon: bookState.starred
+                                  ? new Icon(Icons.star)
+                                  : new Icon(Icons.star_border),
+                              color: Colors.black,
+                              onPressed: () {
+                                setState(() {
+                                  bookState.starred = !bookState.starred;
+                                });
+                                BookDatabase.get().updateBook(bookState);
+                              },
+                            ),
+                            alignment: Alignment.topRight,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+            ),
+          )
+      ),
+    );
   }
 }
