@@ -38,7 +38,7 @@ class Repository {
   Future<ParsedResponse<List<Book>>> getBooks(String input) async{
     //http request, catching error like no internet connection.
     //If no internet is available for example response is
-    http.Response response = await http.get("https://www.googleapis.com/books/v1/volumes?q=$input")
+    http.Response response = await http.get("https://www.googleapis.com/books/v1/volumes?q=$input&maxResults=20")
         .catchError((resp) {});
 
     if(response == null) {
@@ -60,7 +60,6 @@ class Repository {
           url: jsonBook["volumeInfo"]["imageLinks"]["smallThumbnail"],
           id: jsonBook["id"]
       );
-
       networkBooks[book.id] = book;
     }
 

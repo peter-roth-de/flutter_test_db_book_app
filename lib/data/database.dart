@@ -60,12 +60,18 @@ class BookDatabase {
     var db = await _getDb();
     // Building SELECT * FROM TABLE WHERE ID IN (id1, id2, ..., idn)
     var idsString = ids.map((it) => '"$it"').join(',');
-    var result = await db.rawQuery('SELECT * FROM $tableName WHERE ${Book.db_id} IN ($idsString)');
-    var books = [];
-    for(Map<String, dynamic> item in result) {
-      books.add(new Book.fromMap(item));
+    try {
+      var result = await db.rawQuery('SELECT * FROM $tableName WHERE ${Book.db_id} IN ($idsString)');
+      List<Book> books = [];
+      for(Map<String, dynamic> item in result) {
+            books.add(new Book.fromMap(item));
+          }
+      return books;
+    } catch (e) {
+      print(e);
+      print(e.toString());
+      return [];
     }
-    return books;
   }
 
 
@@ -73,7 +79,7 @@ class BookDatabase {
     var db = await _getDb();
     var result = await db.rawQuery('SELECT * FROM $tableName WHERE ${Book.db_star} = "1"');
     if(result.length == 0)return [];
-    var books = [];
+    List<Book> books = [];
     for(Map<String,dynamic> map in result) {
       books.add(new Book.fromMap(map));
     }

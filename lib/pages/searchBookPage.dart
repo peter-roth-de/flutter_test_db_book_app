@@ -47,6 +47,10 @@ class _SearchBookState extends State<SearchBookPage> {
     });
   }
 
+  void _dismissKeyboard(BuildContext context) {
+    FocusScope.of(context).requestFocus(new FocusNode());
+  }
+
   @override
   void dispose() {
     subject.close();
@@ -66,7 +70,11 @@ class _SearchBookState extends State<SearchBookPage> {
       appBar: new AppBar(
         title: new Text("Book Search"),
       ),
-      body: new Container(
+      body: new GestureDetector(
+        onTap: () {
+          this._dismissKeyboard(context);
+        },
+        child: new Container(
         padding: new EdgeInsets.all(8.0),
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -104,6 +112,7 @@ class _SearchBookState extends State<SearchBookPage> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
