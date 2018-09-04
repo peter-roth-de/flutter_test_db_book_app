@@ -5,13 +5,14 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_test_db_book_app/model/book.dart';
 
-
 class BookDatabase {
   static final BookDatabase _bookDatabase = new BookDatabase._internal();
 
   final String tableName = "Books";
 
   Database db;
+
+  bool didInit = false;
 
   static BookDatabase get() {
     return _bookDatabase;
@@ -20,7 +21,14 @@ class BookDatabase {
   BookDatabase._internal();
 
 
-  Future init() async {
+  /// Use this method to access the database, because initialization of the database (it has to go through the method channel)
+  Future<Database> _getDb() async{
+    if(!didInit) await _init();
+    return db;
+  }
+
+
+  Future _init() async {
     // Get a location using path_provider
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, "demo.db");
@@ -36,20 +44,46 @@ class BookDatabase {
                   "${Book.db_notes} TEXT"
                   ")");
         });
-
-
+    didInit = true;
   }
 
   /// Get a book by its id, if there is not entry for that ID, returns null.
   Future<Book> getBook(String id) async{
+    var db = await _getDb();
     var result = await db.rawQuery('SELECT * FROM $tableName WHERE ${Book.db_id} = "$id"');
     if(result.length == 0)return null;
     return new Book.fromMap(result[0]);
   }
 
+  /// Get all books with ids, will return a list with all the books found
+  Future<List<Book>> getBooks(List<String> ids) async{
+    var db = await _getDb();
+    // Building SELECT * FROM TABLE WHERE ID IN (id1, id2, ..., idn)
+    var idsString = ids.map((it) => '"$it"').join(',');
+    var result = await db.rawQuery('SELECT * FROM $tableName WHERE ${Book.db_id} IN ($idsString)');
+    var books = [];
+    for(Map<String, dynamic> item in result) {
+      books.add(new Book.fromMap(item));
+    }
+    return books;
+  }
+
+
+  Future<List<Book>> getFavoriteBooks() async{
+    var db = await _getDb();
+    var result = await db.rawQuery('SELECT * FROM $tableName WHERE ${Book.db_star} = "1"');
+    if(result.length == 0)return [];
+    var books = [];
+    for(Map<String,dynamic> map in result) {
+      books.add(new Book.fromMap(map));
+    }
+    return books;
+  }
+
 
   /// Inserts or replaces the book.
   Future updateBook(Book book) async {
+    var db = await _getDb();
     await db.transaction((txn) async {
       await txn.rawInsert(
           'INSERT OR REPLACE INTO '
@@ -59,6 +93,7 @@ class BookDatabase {
   }
 
   Future close() async {
+    var db = await _getDb();
     return db.close();
   }
 

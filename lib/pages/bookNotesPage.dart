@@ -1,29 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test_db_book_app/database.dart';
+import 'package:flutter_test_db_book_app/data/database.dart';
 import 'package:flutter_test_db_book_app/model/book.dart';
 import 'package:rxdart/rxdart.dart';
 
-
 class BookNotesPage extends StatefulWidget  {
-
   BookNotesPage(this.book);
-
-
   final Book book;
-
 
   @override
   State<StatefulWidget> createState() => new _BookNotesPageState();
-
 }
 
 class _BookNotesPageState extends State<BookNotesPage> {
-
-
   TextEditingController _textController;
-
   final subject = new PublishSubject<String>();
-
 
   @override
   void dispose() {
@@ -39,9 +29,7 @@ class _BookNotesPageState extends State<BookNotesPage> {
       widget.book.notes = text;
       BookDatabase.get().updateBook(widget.book);
     });
-
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +64,4 @@ class _BookNotesPageState extends State<BookNotesPage> {
       ),
     );
   }
-
-
 }
