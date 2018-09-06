@@ -96,7 +96,6 @@ class Repository {
       .then((books) {
         if (books.isOk()) {
           bItems = books.body;
-         print("!!! books . body !!! " +  (bItems.length).toString());
         }
       });
     return bItems;
