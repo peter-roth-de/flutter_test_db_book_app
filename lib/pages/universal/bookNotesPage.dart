@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test_db_book_app/data/database.dart';
+import 'package:flutter_test_db_book_app/data/repository.dart';
 import 'package:flutter_test_db_book_app/model/book.dart';
 import 'package:rxdart/rxdart.dart';
+
 
 class BookNotesPage extends StatefulWidget  {
   BookNotesPage(this.book);
@@ -27,7 +28,7 @@ class _BookNotesPageState extends State<BookNotesPage> {
     _textController = new TextEditingController(text: widget.book.notes);
     subject.stream.debounce(new Duration(milliseconds: 400)).listen((text){
       widget.book.notes = text;
-      BookDatabase.get().updateBook(widget.book);
+      Repository.get().updateBook(widget.book);
     });
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test_db_book_app/data/repository.dart';
 import 'package:flutter_test_db_book_app/model/book.dart';
-import 'package:flutter_test_db_book_app/pages/bookNotesPage.dart';
+import 'package:flutter_test_db_book_app/pages/universal/bookNotesPage.dart';
 import 'package:flutter_test_db_book_app/utils/utils.dart';
 import 'package:flutter_test_db_book_app/widgets/bookCard.dart';
 
@@ -63,8 +63,6 @@ class _CollectionPageState extends State<CollectionPage> {
           ],
         ),
       ),
-
     );
   }
-
 }

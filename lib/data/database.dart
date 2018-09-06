@@ -7,11 +7,8 @@ import 'package:flutter_test_db_book_app/model/book.dart';
 
 class BookDatabase {
   static final BookDatabase _bookDatabase = new BookDatabase._internal();
-
   final String tableName = "Books";
-
   Database db;
-
   bool didInit = false;
 
   static BookDatabase get() {
@@ -27,6 +24,9 @@ class BookDatabase {
     return db;
   }
 
+  Future init() async {
+    return await _init();
+  }
 
   Future _init() async {
     // Get a location using path_provider
@@ -41,10 +41,15 @@ class BookDatabase {
                   "${Book.db_title} TEXT,"
                   "${Book.db_url} TEXT,"
                   "${Book.db_star} BIT,"
-                  "${Book.db_notes} TEXT"
+                  "${Book.db_notes} TEXT,"
+                  "${Book.db_author} TEXT,"
+                  "${Book.db_description} TEXT,"
+                  "${Book.db_subtitle} TEXT"
                   ")");
         });
     didInit = true;
+
+
   }
 
   /// Get a book by its id, if there is not entry for that ID, returns null.
@@ -60,18 +65,12 @@ class BookDatabase {
     var db = await _getDb();
     // Building SELECT * FROM TABLE WHERE ID IN (id1, id2, ..., idn)
     var idsString = ids.map((it) => '"$it"').join(',');
-    try {
-      var result = await db.rawQuery('SELECT * FROM $tableName WHERE ${Book.db_id} IN ($idsString)');
-      List<Book> books = [];
-      for(Map<String, dynamic> item in result) {
-            books.add(new Book.fromMap(item));
-          }
-      return books;
-    } catch (e) {
-      print(e);
-      print(e.toString());
-      return [];
+    var result = await db.rawQuery('SELECT * FROM $tableName WHERE ${Book.db_id} IN ($idsString)');
+    List<Book> books = [];
+    for(Map<String, dynamic> item in result) {
+      books.add(new Book.fromMap(item));
     }
+    return books;
   }
 
 
@@ -87,14 +86,27 @@ class BookDatabase {
   }
 
 
+  //TODO escape not allowed characters eg. ' " '
   /// Inserts or replaces the book.
   Future updateBook(Book book) async {
     var db = await _getDb();
     await db.transaction((txn) async {
       await txn.rawInsert(
           'INSERT OR REPLACE INTO '
-              '$tableName(${Book.db_id}, ${Book.db_title}, ${Book.db_url}, ${Book.db_star}, ${Book.db_notes})'
-              ' VALUES("${book.id}", "${book.title}", "${book.url}", ${book.starred? 1:0}, "${book.notes}")');
+              '$tableName(${Book.db_id}, ${Book.db_title}, ${Book
+              .db_url}, ${Book.db_star}, ${Book.db_notes}, ${Book
+              .db_author}, ${Book.db_description}, ${Book.db_subtitle})'
+              ' VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
+          [
+            book.id,
+            book.title,
+            book.url,
+            book.starred ? 1 : 0,
+            book.notes,
+            book.author,
+            book.description,
+            book.subtitle
+          ]);
     });
   }
 

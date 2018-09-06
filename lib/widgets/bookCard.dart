@@ -23,6 +23,7 @@ class BookCardState extends State<BookCard> {
     return new GestureDetector(
       onTap: widget.onCardClick,
       child: new Card(
+          elevation: 8.0,  //##PR
           child: new Container(
             height: 200.0,
             child: new Padding(
@@ -31,7 +32,7 @@ class BookCardState extends State<BookCard> {
                   children: <Widget>[
                     widget.book.url != null?
                     new Hero(
-                      child: new Image.network(widget.book.url),
+                      child: new Card(elevation: 4.0, child: new Image.network(widget.book.url)),
                       tag: widget.book.id,
                     ):
                     new Container(),
