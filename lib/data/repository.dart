@@ -45,7 +45,7 @@ class Repository {
     //http request, catching error like no internet connection.
     //If no internet is available for example response is
     //TODO restricted language to english, feel free to remove that
-    http.Response response = await http.get("https://www.googleapis.com/books/v1/volumes?q=$input&langRestrict=en")
+    http.Response response = await http.get("https://www.googleapis.com/books/v1/volumes?q=$input") // PR &langRestrict=en")
         .catchError((resp) {});
 
     if(response == null) {
@@ -73,6 +73,43 @@ class Repository {
     }
 
     return new ParsedResponse(response.statusCode, []..addAll(networkBooks.values));
+  }
+
+  //// fetch books for a given book category
+  // Future<ParsedResponse<List<Book>>> getBooksByCategory(String category) async {
+
+  /*
+  Repository.get().getBooks(text)
+        .then((books){
+      setState(() {
+        isLoading = false;
+        if(books.isOk()) {
+          items = books.body;
+        } else {
+          scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Something went wrong, check your internet connection")));
+        }
+      });
+  */
+  Future<List<Book>>getBooksByCategory(String category) async {
+    List<Book> bItems = new List();
+    await Repository.get().getBooks("q=subject:$category")
+      .then((books) {
+        if (books.isOk()) {
+          bItems = books.body;
+         print("!!! books . body !!! " +  (bItems.length).toString());
+        }
+      });
+    return bItems;
+  }
+
+  // the same function as getBooksByCategory but in OLD style for old programmers :-)
+  Future<List<Book>>getXBooksByCategory(String category) async {
+    List<Book> items = new List();
+    ParsedResponse<List<Book>> pResp = await Repository.get().getBooks("q=subject:$category");
+    if(pResp.isOk()) {
+      items = pResp.body;
+    }
+    return items;
   }
 
   Future<ParsedResponse<Book>> getBook(String id) async {

@@ -59,10 +59,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             new SliverList(delegate: new SliverChildListDelegate(
               [
                 wrapInAnimation(myCollection(), 0),
-                wrapInAnimation(collectionPreview(new Color(0xffffffff), "Biographies", ["ZgrDRPlNNfQC","_LFSBgAAQBAJ","8U2oAAAAQBAJ", "yG3PAK6ZOucC"]), 1),
-                wrapInAnimation(collectionPreview(new Color(0xffffffff), "Fiction", ["OsUPDgAAQBAJ", "3e-dDAAAQBAJ", "-ITZDAAAQBAJ","rmBeDAAAQBAJ", "vgzJCwAAQBAJ"]), 2),
-                wrapInAnimation(collectionPreview(new Color(0xffffffff), "Mystery & Thriller", ["1Y9gDQAAQBAJ", "Pz4YDQAAQBAJ", "UXARDgAAQBAJ"]), 3),
-                wrapInAnimation(collectionPreview(new Color(0xffffffff), "Sience Ficition", ["JMYUDAAAQBAJ","PzhQydl-QD8C", "nkalO3OsoeMC", "VO8nDwAAQBAJ", "Nxl0BQAAQBAJ"]), 4),
+                wrapInAnimation(getBookCategoryCollection("Biographies"),1),
+                wrapInAnimation(getXBookCategoryCollection("Fiction"),2),
+                wrapInAnimation(getXBookCategoryCollection("Mystery & Thriller"),3),
+                wrapInAnimation(getXBookCategoryCollection("Sience Ficition"),4),
+               // wrapInAnimation(collectionPreview(new Color(0xffffffff), "Biographies", ["ZgrDRPlNNfQC","_LFSBgAAQBAJ","8U2oAAAAQBAJ", "yG3PAK6ZOucC"]), 1),
+               // wrapInAnimation(collectionPreview(new Color(0xffffffff), "Fiction", ["OsUPDgAAQBAJ", "3e-dDAAAQBAJ", "-ITZDAAAQBAJ","rmBeDAAAQBAJ", "vgzJCwAAQBAJ"]), 2),
+               // wrapInAnimation(collectionPreview(new Color(0xffffffff), "Mystery & Thriller", ["1Y9gDQAAQBAJ", "Pz4YDQAAQBAJ", "UXARDgAAQBAJ"]), 3),
+               // wrapInAnimation(collectionPreview(new Color(0xffffffff), "Sience Ficition", ["JMYUDAAAQBAJ","PzhQydl-QD8C", "nkalO3OsoeMC", "VO8nDwAAQBAJ", "Nxl0BQAAQBAJ"]), 4),
                 new Center(
                   child: new Switch(value: interfaceType != "formal", onChanged: (bool){
                     setState((){
@@ -140,10 +144,50 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           books: books,
           //color: new Color(0xffFC96BC),
           color: new Color(0xffffffff),
-          title: "My Collection",
+          title: "My Category",
           loading: snapshot.data == null,
         );
       },
     );
   }
+  Widget getBookCategoryCollection(String category) {
+    return new FutureBuilder<List<Book>>(
+      future: Repository.get().getBooksByCategory(category),
+      builder: (BuildContext context, AsyncSnapshot<List<Book>> snapshot) {
+        List<Book> books = [];
+        if(snapshot.data != null) books = snapshot.data;
+        if(books.isEmpty) {
+          return new Container();
+        }
+        return new CollectionPreview(
+          books: books,
+          //color: new Color(0xffFC96BC),
+          color: new Color(0xffffffff),
+          title: category,
+          loading: snapshot.data == null,
+        );
+      },
+    );
+  }
+
+  Widget getXBookCategoryCollection(String category) {
+    return new FutureBuilder<List<Book>>(
+      future: Repository.get().getXBooksByCategory(category),
+      builder: (BuildContext context, AsyncSnapshot<List<Book>> snapshot) {
+        List<Book> books = [];
+        if(snapshot.data != null) books = snapshot.data;
+        if(books.isEmpty) {
+          return new Container();
+        }
+        return new CollectionPreview(
+          books: books,
+          //color: new Color(0xffFC96BC),
+          color: new Color(0xffffffff),
+          title: category,
+          loading: snapshot.data == null,
+        );
+      },
+    );
+  }
+
 }
