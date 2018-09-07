@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    cardsFirstOpenController = new AnimationController(vsync: this, duration: const Duration(milliseconds: 5000));
+    cardsFirstOpenController = new AnimationController(vsync: this, duration: const Duration(milliseconds: 1300));
 
     Repository.get().init().then((it){
       setState((){
@@ -62,7 +62,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 wrapInAnimation(getBookCategoryCollection("Biographies"),1),
                 wrapInAnimation(getXBookCategoryCollection("Fiction"),2),
                 wrapInAnimation(getXBookCategoryCollection("Mystery & Thriller"),3),
-                wrapInAnimation(getXBookCategoryCollection("Sience Ficition"),4),
+                wrapInAnimation(getXBookCategoryCollection("Sience Fiction"),4),
+                wrapInAnimation(getXBookCategoryCollection("EDV"),5),
                // wrapInAnimation(collectionPreview(new Color(0xffffffff), "Biographies", ["ZgrDRPlNNfQC","_LFSBgAAQBAJ","8U2oAAAAQBAJ", "yG3PAK6ZOucC"]), 1),
                // wrapInAnimation(collectionPreview(new Color(0xffffffff), "Fiction", ["OsUPDgAAQBAJ", "3e-dDAAAQBAJ", "-ITZDAAAQBAJ","rmBeDAAAQBAJ", "vgzJCwAAQBAJ"]), 2),
                // wrapInAnimation(collectionPreview(new Color(0xffffffff), "Mystery & Thriller", ["1Y9gDQAAQBAJ", "Pz4YDQAAQBAJ", "UXARDgAAQBAJ"]), 3),
