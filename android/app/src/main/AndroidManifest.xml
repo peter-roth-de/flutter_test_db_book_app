@@ -14,7 +14,7 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="flutter_test_db_book_app"
+        android:label="Book Manager"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
