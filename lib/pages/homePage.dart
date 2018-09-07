@@ -46,6 +46,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         body: init? new Container(): new CustomScrollView(
           slivers: <Widget>[
             new SliverAppBar(
+              title: new Text("Book Manager"),
               actions: <Widget>[
                 new IconButton(icon: new Icon(Icons.search), onPressed: () {Navigator.pushNamed(context, '/search_$interfaceType');},),
                 new IconButton(icon: new Icon(Icons.collections), onPressed: () {Navigator.pushNamed(context, '/stamp_collection_$interfaceType');},),

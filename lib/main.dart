@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
       child: new MaterialApp(
         title: 'Book search',
         theme: new ThemeData(
-          primaryColor: new Color(0xFF0F2533),
+          primaryColor: new Color(0xFFaaaaaa),//new Color(0xFF0F2533),
         ),
         routes: {
           '/': (BuildContext context) => new HomePage(),
